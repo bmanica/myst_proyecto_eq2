@@ -2,6 +2,7 @@
 *Insert here a brief description of the project, including, purpose, technologies used and context 
 where it was created.*
 
+
 ## Install dependencies
 
 Install all the dependencies stated in the requirements.txt file, just run the following command in terminal:
@@ -12,7 +13,7 @@ Or you can manually install one by one using the name and version in the file.
 
 ## Funcionalities
 
-*Add here examples of core functionalities for the project in this repository.*
+*hello.*
 
 ## Author
 *Add Name and a brief description on who you are.*
