@@ -5,6 +5,6 @@
 # -- script: functions.py : python script with general functions                                         -- #
 # -- author: YOUR GITHUB USER NAME                                                                       -- #
 # -- license: THE LICENSE TYPE AS STATED IN THE REPOSITORY                                               -- #
-# -- repository: YOUR REPOSITORY URL                                                                     -- #
+# -- repository: https://github.com/bmanica/myst_proyecto_eq2                                                                    -- #
 # -- --------------------------------------------------------------------------------------------------- -- #
 """
