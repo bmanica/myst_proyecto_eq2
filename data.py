@@ -13,7 +13,6 @@
 
 ### Libraries to use
 import pandas as pd
-import numpy as np
 import datetime
 
 # ================================= Data object definition ================================================ #
@@ -45,5 +44,12 @@ for i in unemployment['Datetime']:
 
     sub_set = sub_set[(sub_set['timestamp'] >= delta_down) & (sub_set['timestamp'] <= delta_up)]
     usdmxn_data = pd.concat([usdmxn_data, sub_set], ignore_index=True)
+
+bad_data = usdmxn_data.copy()
+
+usdmxn_data['open'] = 1 / bad_data['open']
+usdmxn_data['high'] = 1 / bad_data['low']
+usdmxn_data['low'] = 1 / bad_data['high']
+usdmxn_data['close'] = 1 / bad_data['close']
 
 fx_data = usdmxn_data
