@@ -1140,7 +1140,7 @@ def get_trading_summary(data: pd.DataFrame,
             # Buy definition
             elif scenario == 'C' or scenario == 'D':
 
-                data_adder(scenario_list, cases)  # Add scenario
+                data_adder(scenario_list, scenario)  # Add scenario
 
                 # Limit definition for this scenarios
                 operation_price = sub_set.iloc[1].open
