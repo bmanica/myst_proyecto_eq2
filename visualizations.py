@@ -38,3 +38,49 @@ def val_graph(df):
                   
     return fig.show()
 
+
+def hist(x,title:str):
+    """
+    Docstring
+    Function that plots the time series Histogram.
+    
+    Parameters
+    --------------------
+    x: time series.
+    title: the title of the plot.
+    
+    Returns
+    --------------------
+    boxplot of the time series. 
+    """
+    fig = go.Figure(data=[go.Histogram(x=x,)])
+
+    fig.update_layout(
+        title_text=title)
+
+    return fig.show()
+
+
+
+
+
+def boxplot(x,title:str):
+    """
+    Docstring
+    Function that plots the time series boxplot.
+    
+    Parameters
+    --------------------
+    x: time series.
+    title: the title of the plot.
+    
+    Returns
+    --------------------
+    boxplot of the time series. 
+    """
+    fig = go.Figure(data=[go.Box(x=x,)])
+
+    fig.update_layout(
+        title_text=title)
+
+    return fig.show()
