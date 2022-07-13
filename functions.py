@@ -204,11 +204,11 @@ def Metrics(eventos_df, unemployment_df):
 
     return df_escenarios
 
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------
 #                           Statistical functions
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------
 
 def dw(x, funcs=[acf,pacf]):
     """
@@ -417,7 +417,7 @@ def normality_test(x,alfa:float, funcs:list = [shapiro, normaltest, jarque_bera,
     
     Return 
     ------------
-    The histogram of the time series.
+    
     A chart with the normalility test results.
     """
     
@@ -497,53 +497,6 @@ def normality_test(x,alfa:float, funcs:list = [shapiro, normaltest, jarque_bera,
 
 
     return iplot(andar_table)
-
-
-def hist(x,title:str):
-    """
-    Docstring
-    Function that plots the time series Histogram.
-    
-    Parameters
-    --------------------
-    x: time series.
-    title: the title of the plot.
-    
-    Returns
-    --------------------
-    boxplot of the time series. 
-    """
-    fig = go.Figure(data=[go.Histogram(x=x,)])
-
-    fig.update_layout(
-        title_text=title)
-
-    return fig.show()
-
-
-
-
-
-def boxplot(x,title:str):
-    """
-    Docstring
-    Function that plots the time series boxplot.
-    
-    Parameters
-    --------------------
-    x: time series.
-    title: the title of the plot.
-    
-    Returns
-    --------------------
-    boxplot of the time series. 
-    """
-    fig = go.Figure(data=[go.Box(x=x,)])
-
-    fig.update_layout(
-        title_text=title)
-
-    return fig.show()
 
 
 
@@ -818,7 +771,7 @@ def empiric_trade(val):
     np.random.seed(123)
     
     ind_date = val.iloc[0]['timestamp']+datetime.timedelta(minutes=30)
-    ind_idx  = val.index[[val['timestamp']==ind_date]]
+    ind_idx  = val.index[val['timestamp']==ind_date] #quitar un corchete
     ind_idx = ind_idx[0]
     rent =  val.iloc[-1]['close']-val.loc[ind_idx]['open']
     max_pip = np.round((-val.loc[ind_idx]['open']+val['open'].max())*10000)
