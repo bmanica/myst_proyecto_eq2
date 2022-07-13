@@ -482,19 +482,6 @@ def normality_test(x,alfa:float, funcs:list = [shapiro, normaltest, jarque_bera,
     )
     data = [trace]
     andar_table = dict(data=data, layout=layout)
-    
- 
-
-    
-
-
-    
-   
-
-
-
-
-
 
     return iplot(andar_table)
 
@@ -805,6 +792,425 @@ def empiric_trade(val):
         
     summary = pd.DataFrame(dict_metrics, index=['Operation']) 
     return summary
+
+# ================================== Trading System Definition ============================================ #
+
+### Trading system definition
+def get_trading_summary(data: pd.DataFrame,
+                        clasification: pd.DataFrame,
+                        pip_up: float,
+                        pip_down: float,
+                        volume: float,
+                        intial_cap: float,
+                        scenario=None) -> pd.DataFrame:
+    """
+    Trading system definition based on the unemployment rate from the USA economy.
+    The decisions are set from a previous knowledge on the behaviour and relationship
+    between the USDMXN price and the reported value for the indicator. It summarize the
+    trading operation and the capital evolution through the life of the operations
+
+    Parameters
+    ----------
+
+    data: pd.DataFrame (default:None) --> Required parameter
+
+        USDMXN prices on a minute granularity, it has to follow the next structure
+
+        'timestamp': First column, correspond to the timestamp associated to each price
+        'open': Second column, correspond to the open price for each timestamp associated
+        'high': Third column, correspond to the high price for each timestamp associated
+        'low': Fourth column, correspond to the low price for each timestamp associated
+        'close': Fifth column, correspond to the close price for each timestamp associated
+        'volume': Sixth column, correspond to the volume operated for each timestamp associated
+        'date': Seventh column, correspond to the date in YYYY-MM-DD format for each timestamp
+
+    clasification: pd.DataFrame (default:None) --> Required parameter
+
+        USA unemployment rate reporting from Jan-2018 to Dec-2020 (monthly frequency)
+
+        'Datetime': DataFrame index, correspond to the timestamp where the indicator was reported
+        'Country/Region ': Region of origin (unique value "United States")
+        'Event ': Indicator name
+        'Importance ': Level of importance associated to the indicator within the USA economy
+        'Period ': Reported period
+        'Actual ': Reported value for the indicator
+        'Consensus ': Economical expectations to the indicator report value
+        'Prior ': Previous value corresponding to the indicator (previous month)
+        'Scenario': Type of scenario definition
+
+    pip_up: float (default:None) --> Required parameter
+
+        Number of Pip's that will define an increase on USDMXN prices
+
+    pip_down: float (default:None) --> Required parameter
+
+        Number of Pip's that will define a downgrade on USDMXN prices
+
+    volume: float (default:None) --> Required parameter
+
+        Number of USDMXN to be trade by each operation
+
+    intial_cap: float (default:None) --> Required parameter
+
+        Initial capital for start the trading system (in USD)
+
+    scenario: str (default:None) --> Optional parameter
+
+        Scenario where the trading system wants to be analyzed. If none it will display all scenarios
+
+    Returns
+    -------
+
+    trading_res: pd.DataFrame
+
+        Final summary associated to the trading strategy it can correspond just to a single scenario or
+        all of them contained in clasification data frame. It follows the next structure
+
+        'Datetime': Index, timestamp where the indicator was reported
+        'Scenario': Scenario associated to the trading decision within that timestamp
+        'Operation': Signal detection (buy or sell)
+        'Volume': Sell or buy volume associated to the trading decision
+        'Result': Balance of the operation (won or lost)
+        'Pip Up': The upper pip defined for that trading strategy
+        'Pip Down': The lower pip defined for that trading strategy
+        'Capital': Utility assigned to the operation
+        'Cumulative Capital': Evolution of the invested capital within the whole period
+
+    References
+    ----------
+
+    [1] https://pandas.pydata.org/docs/
+
+    """
+
+    # Data structure to return
+    trading_res = pd.DataFrame(columns=['Scenario', 'Operation', 'Volume',
+                                        'Result', 'Pip Up', 'Pip Down',
+                                        'Capital', 'Cumulative Capital'])
+
+    # First define it for all possible scenarios
+    if scenario is None:
+
+        scenario_list = []
+        utility_list = []
+        cum_capital = []
+        status_operation = []
+
+        for i, j in zip(clasification.index.values, range(0, len(clasification))):
+
+            data_adder = lambda each_list, values: each_list.append(values)
+
+            try:
+                sub_set = data[(data['timestamp'] >= pd.to_datetime(i)) &
+                               (data['timestamp'] < pd.to_datetime(clasification.index.values[j + 1]))]
+
+            except IndexError:
+                sub_set = data[(data['timestamp'] >= pd.to_datetime(i))]
+
+            cases = clasification['Scenario'].iloc[j]
+
+            # Sell definition
+            if cases == 'A' or cases == 'B':
+
+                data_adder(scenario_list, cases)  # Add scenario
+
+                # Limit definition for this scenarios
+                operation_price = sub_set['open'].iloc[1]
+                take_profit = (sub_set['open'].iloc[1] - (pip_down / 10000))
+                take_profit = (volume * (operation_price - take_profit)) / operation_price  # Take profit in USD
+                stop_loss = (sub_set['open'].iloc[1] + (pip_up / 10000))
+                stop_loss = (volume * (operation_price - stop_loss)) / operation_price  # Stop loss in USD
+
+                # Stop loss boundary at a lost of 1000 USD
+                if stop_loss <= -1000:
+                    stop_loss = -1000
+
+                else:
+                    stop_loss = stop_loss
+
+                sub_utility = []
+                utility_evo = []
+
+                for k in range(2, len(sub_set)):
+
+                    check_price = sub_set.iloc[k].close
+                    check_utility = ((operation_price - check_price) * volume) / operation_price  # Utility in USD
+                    data_adder(utility_evo, check_utility)
+
+                    if (check_utility >= take_profit) or (check_utility <= stop_loss):  # Close position
+
+                        utility = (volume * (operation_price - check_price)) / operation_price
+                        data_adder(utility_list, utility)
+
+                        if utility < 0:
+                            data_adder(status_operation, 'Lost')
+
+                        elif utility >= 0:
+                            data_adder(status_operation, 'Won')
+
+                        capital = intial_cap + sum(utility_list)
+                        data_adder(cum_capital, capital)
+
+                        break
+
+                    else:  # Open position
+
+                        utility = (volume * (operation_price - check_price)) / operation_price
+                        data_adder(sub_utility, utility)
+
+                # Never touch limit of take profit or stop loss
+                if len(utility_list) < j + 1:
+
+                    data_adder(utility_list, sub_utility.pop())
+                    capital = intial_cap + sum(utility_list)
+                    data_adder(cum_capital, capital)
+
+                    if sub_utility.pop() < 0:
+                        data_adder(status_operation, 'Lost')
+
+                    elif sub_utility.pop() >= 0:
+                        data_adder(status_operation, 'Won')
+
+            # Buy definition
+            elif cases == 'C' or cases == 'D':
+
+                data_adder(scenario_list, cases)  # Add scenario
+
+                # Limit definition for this scenarios
+                operation_price = sub_set.iloc[1].open
+                take_profit = (sub_set['open'].iloc[1] + (pip_up / 10000))
+                take_profit = (volume * (take_profit - operation_price)) / operation_price  # Take profit in USD
+                stop_loss = (sub_set['open'].iloc[1] - (pip_down / 10000))
+                stop_loss = (volume * (stop_loss - operation_price)) / operation_price  # Take profit in USD
+
+                # Stop loss boundary at a lost of 1000 USD
+                if stop_loss <= -1000:
+                    stop_loss = -1000
+
+                else:
+                    stop_loss = stop_loss
+
+                sub_utility = []
+                utility_evo = []
+
+                for k in range(2, len(sub_set)):
+
+                    check_price = sub_set.iloc[k].close
+                    check_utility = (volume * (check_price - operation_price)) / operation_price  # Utility in USD
+                    data_adder(utility_evo, check_utility)
+
+                    if (check_utility >= take_profit) or (check_utility <= stop_loss):  # Close position
+
+                        utility = (volume * (check_price - operation_price)) / operation_price
+                        data_adder(utility_list, utility)
+
+                        if utility < 0:
+                            data_adder(status_operation, 'Lost')
+
+                        elif utility >= 0:
+                            data_adder(status_operation, 'Won')
+
+                        capital = intial_cap + sum(utility_list)
+                        data_adder(cum_capital, capital)
+
+                        break
+
+                    else:  # Open position
+
+                        utility = (volume * (check_price - operation_price)) / operation_price
+                        data_adder(sub_utility, utility)
+
+                # Never touch limit of take profit or stop loss
+                if len(utility_list) < j + 1:
+
+                    data_adder(utility_list, sub_utility.pop())
+                    capital = intial_cap + sum(utility_list)
+                    data_adder(cum_capital, capital)
+
+                    if sub_utility.pop() < 0:
+                        data_adder(status_operation, 'Lost')
+
+                    elif sub_utility.pop() >= 0:
+                        data_adder(status_operation, 'Won')
+
+        # Final dataframe filling
+        trading_res['Scenario'] = scenario_list
+        trading_res['Operation'] = ['Sell' if i == 'A' or i == 'B' else 'Buy'
+                                    for i in clasification['Scenario']]
+        trading_res['Volume'] = [volume] * len(clasification)
+        trading_res['Result'] = status_operation
+        trading_res['Pip Up'] = [pip_up] * len(clasification)
+        trading_res['Pip Down'] = [pip_down] * len(clasification)
+        trading_res['Capital'] = utility_list
+        trading_res['Cumulative Capital'] = cum_capital
+        trading_res.index = clasification.index.values
+        trading_res.index.name = 'Datetime'
+
+        trading_res = trading_res[trading_res['Capital'] >= -1000]
+
+        return trading_res
+
+    # For the specified scenario to analyze
+    else:
+
+        scenario_list = []
+        utility_list = []
+        cum_capital = []
+        status_operation = []
+
+        clasification = clasification[clasification['Scenario'] == scenario]
+
+        for i, j in zip(clasification.index.values, range(0, len(clasification))):
+
+            data_adder = lambda each_list, values: each_list.append(values)
+
+            try:
+                sub_set = data[(data['timestamp'] >= pd.to_datetime(i)) &
+                               (data['timestamp'] < pd.to_datetime(clasification.index.values[j + 1]))]
+
+            except IndexError:
+                sub_set = data[(data['timestamp'] >= pd.to_datetime(i))]
+
+            # Sell definition
+            if scenario == 'A' or scenario == 'B':
+
+                data_adder(scenario_list, scenario)  # Add scenario
+
+                # Limit definition for this scenarios
+                operation_price = sub_set['open'].iloc[1]
+                take_profit = (sub_set['open'].iloc[1] - (pip_down / 10000))
+                take_profit = (volume * (operation_price - take_profit)) / operation_price  # Take profit in USD
+                stop_loss = (sub_set['open'].iloc[1] + (pip_up / 10000))
+                stop_loss = (volume * (operation_price - stop_loss)) / operation_price  # Stop loss in USD
+
+                # Stop loss boundary at a lost of 1000 USD
+                if stop_loss <= -1000:
+                    stop_loss = -1000
+
+                else:
+                    stop_loss = stop_loss
+
+                sub_utility = []
+                utility_evo = []
+
+                for k in range(2, len(sub_set)):
+
+                    check_price = sub_set.iloc[k].close
+                    check_utility = ((operation_price - check_price) * volume) / operation_price  # Utility in USD
+                    data_adder(utility_evo, check_utility)
+
+                    if (check_utility >= take_profit) or (check_utility <= stop_loss):  # Close position
+
+                        utility = (volume * (operation_price - check_price)) / operation_price
+                        data_adder(utility_list, utility)
+
+                        if utility < 0:
+                            data_adder(status_operation, 'Lost')
+
+                        elif utility >= 0:
+                            data_adder(status_operation, 'Won')
+
+                        capital = intial_cap + sum(utility_list)
+                        data_adder(cum_capital, capital)
+
+                        break
+
+                    else:  # Open position
+
+                        utility = (volume * (operation_price - check_price)) / operation_price
+                        data_adder(sub_utility, utility)
+
+                # Never touch limit of take profit or stop loss
+                if len(utility_list) < j + 1:
+
+                    data_adder(utility_list, sub_utility.pop())
+                    capital = intial_cap + sum(utility_list)
+                    data_adder(cum_capital, capital)
+
+                    if sub_utility.pop() < 0:
+                        data_adder(status_operation, 'Lost')
+
+                    elif sub_utility.pop() >= 0:
+                        data_adder(status_operation, 'Won')
+
+            # Buy definition
+            elif scenario == 'C' or scenario == 'D':
+
+                data_adder(scenario_list, cases)  # Add scenario
+
+                # Limit definition for this scenarios
+                operation_price = sub_set.iloc[1].open
+                take_profit = (sub_set['open'].iloc[1] + (pip_up / 10000))
+                take_profit = (volume * (take_profit - operation_price)) / operation_price  # Take profit in USD
+                stop_loss = (sub_set['open'].iloc[1] - (pip_down / 10000))
+                stop_loss = (volume * (stop_loss - operation_price)) / operation_price  # Take profit in USD
+
+                # Stop loss boundary at a lost of 1000 USD
+                if stop_loss <= -1000:
+                    stop_loss = -1000
+
+                else:
+                    stop_loss = stop_loss
+
+                sub_utility = []
+                utility_evo = []
+
+                for k in range(2, len(sub_set)):
+
+                    check_price = sub_set.iloc[k].close
+                    check_utility = (volume * (check_price - operation_price)) / operation_price  # Utility in USD
+                    data_adder(utility_evo, check_utility)
+
+                    if (check_utility >= take_profit) or (check_utility <= stop_loss):  # Close position
+
+                        utility = (volume * (check_price - operation_price)) / operation_price
+                        data_adder(utility_list, utility)
+
+                        if utility < 0:
+                            data_adder(status_operation, 'Lost')
+
+                        elif utility >= 0:
+                            data_adder(status_operation, 'Won')
+
+                        capital = intial_cap + sum(utility_list)
+                        data_adder(cum_capital, capital)
+
+                        break
+
+                    else:  # Open position
+
+                        utility = (volume * (check_price - operation_price)) / operation_price
+                        data_adder(sub_utility, utility)
+
+                # Never touch limit of take profit or stop loss
+                if len(utility_list) < j + 1:
+
+                    data_adder(utility_list, sub_utility.pop())
+                    capital = intial_cap + sum(utility_list)
+                    data_adder(cum_capital, capital)
+
+                    if sub_utility.pop() < 0:
+                        data_adder(status_operation, 'Lost')
+
+                    elif sub_utility.pop() >= 0:
+                        data_adder(status_operation, 'Won')
+
+        # Final dataframe filling
+        trading_res['Scenario'] = scenario_list
+        trading_res['Operation'] = ['Sell' if i == 'A' or i == 'B' else 'Buy'
+                                    for i in clasification['Scenario']]
+        trading_res['Volume'] = [volume] * len(clasification)
+        trading_res['Result'] = status_operation
+        trading_res['Pip Up'] = [pip_up] * len(clasification)
+        trading_res['Pip Down'] = [pip_down] * len(clasification)
+        trading_res['Capital'] = utility_list
+        trading_res['Cumulative Capital'] = cum_capital
+        trading_res.index = clasification.index.values
+        trading_res.index.name = 'Datetime'
+
+        trading_res = trading_res[trading_res['Capital'] >= -1000]
+
+        return trading_res
     
 
 
