@@ -800,8 +800,8 @@ def empiric_trade(val):
         profit = volume * (val.loc[ind_idx]['open']-price_tp)
         loss = volume * (val.loc[ind_idx]['open']-price_sl)
         
-    dict_metrics = {'Operation':operation,'Direction':direction, 'Takeprofit':takeprofit, 
-                    'Stoploss': stoploss,'Profit':profit, 'Loss':loss}
+    dict_metrics = {'Operation':operation,'Direction':direction, 'Volume':volume, 'Takeprofit(pip)':takeprofit, 
+                    'Stoploss(pip)': stoploss,'Profit($)':profit, 'Loss($)':loss}
         
     summary = pd.DataFrame(dict_metrics, index=['Operation']) 
     return summary
