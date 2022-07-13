@@ -9,6 +9,9 @@
 # -- --------------------------------------------------------------------------------------------------- -- #
 """
 
+# ================================ Required packages and scripts ========================================== #
+
+### Libraries to use
 import pandas as pd
 import numpy as np
 import datetime
@@ -28,6 +31,7 @@ import plotly.figure_factory as ff
 import chart_studio.plotly 
 import plotly.offline as pyo
 from plotly.offline import iplot
+from pyswarm import pso
 
 
 def data_manipulation(forex_1, forex_2, forex_3, indicator):
@@ -1260,4 +1264,58 @@ def max_sharpe(iterable, *args):
 
     return res
 
+# ================================= Optimization PSO definition =========================================== #
 
+### Particle Swarm Optimization
+def get_pso(obj_fun,
+            upper_limit:list,
+            down_limit:list,
+            args:tuple,
+            iterations:float,
+            minstep:float):
+
+    """
+    PSO optimization function definition for the trading system
+
+    Parameters
+    ----------
+
+    obj_fun
+        Objective function definition to be optimizated
+
+    upper_limit (default:None) --> Required parameter
+        Upper limit for all the iterable variables in the optimization problem. It has to follow
+        a list type
+
+    down_limit (default:None) --> Required parameter
+        Down values limit for all the iterable variables in the optimization problem. It has to follow
+        a list type
+
+    args (default:None) --> Required parameter
+        All the fixed paramaters to be using on the optimization problem
+
+    iterations (default:None) --> Required parameter
+        Number of iterations to be explored by the pso algorithm
+
+    minstep (default:None) --> Required parameter
+        Step size to be used between the upper and down limit
+
+    Returns
+    -------
+
+    xopt
+        Optimal value for all the iterable components in the problem definition
+
+    fopt
+        Optimal value for the global problem (value that it's wanted to be the best)
+
+    References
+    ----------
+
+    [1] https://pyswarms.readthedocs.io/en/latest/
+    """
+
+    # Define the optimal process
+    xopt, fopt = pso(obj_fun, upper_limit, down_limit, args=args, maxiter=iterations, minstep=minstep)
+
+    return xopt, fopt
