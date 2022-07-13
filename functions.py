@@ -1211,7 +1211,53 @@ def get_trading_summary(data: pd.DataFrame,
         trading_res = trading_res[trading_res['Capital'] >= -1000]
 
         return trading_res
-    
 
+# ================================ Objective Function Definition ========================================== #
+
+### Sharpe ratio as an objective function
+def max_sharpe(iterable, *args):
+    """
+    Sharpe ratio metric definition for evaluating the final performance within an investment strategy.
+    The final aim of this function it's to get maximized in order to find an optimal returns-risk balance
+
+    Parameters
+    ----------
+
+    iterable
+        Variable parameters to iterate in optimization process. (pip_up, pip_down, volume)
+
+    args
+        Fixed parameters to calculate the trading system definition
+
+    Returns
+    -------
+
+    res
+        Sharpe ratio calculations, it returns a negative result in order to minimize that value
+
+    References
+    ----------
+
+    [1] https://cfastudyguide.com/performance-appraisal/
+
+    """
+
+    pip_up, pip_down, volume = iterable
+    data, clasification, intial_cap, scenario, rf = args
+
+    # Risk free definition
+    rf = rf / 12  # Monthly
+
+    # Expected returns definition
+    capital = get_trading_summary(data, clasification, pip_up, pip_down, volume, intial_cap, scenario)[
+        'Cumulative Capital']
+    expected_ret = (capital / intial_cap) - 1
+    rf = rf * np.sqrt(len(expected_ret) / 12)  # Risk free rate associated to the duration
+
+    # Sharpe ratio definition
+    sharpe_ratio = ((np.mean(expected_ret) * len(expected_ret)) - rf) / np.std(expected_ret)
+    res = -sharpe_ratio
+
+    return res
 
 
