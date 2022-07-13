@@ -8,6 +8,10 @@
 # -- repository: https://github.com/bmanica/myst_proyecto_eq2                                            -- #
 # -- --------------------------------------------------------------------------------------------------- -- #
 """
+
+import plotly.graph_objects as go
+import datetime
+
 def val_graph(df):
     """
     This function plots the closing price time series. It also includes a line where the indicator was announced 
