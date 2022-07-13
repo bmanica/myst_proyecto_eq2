@@ -26,6 +26,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import chart_studio.plotly 
+import plotly.offline as pyo
 from plotly.offline import iplot
 
 
@@ -482,12 +483,7 @@ def normality_test(x,alfa:float, funcs:list = [shapiro, normaltest, jarque_bera,
     data = [trace]
     andar_table = dict(data=data, layout=layout)
     
-    fig = go.Figure(data=[x])
-
-    fig.update_layout(
-       title_text='Unemployment Rate Histogram')
-    fig.show()
-   
+ 
 
     
 
@@ -501,6 +497,29 @@ def normality_test(x,alfa:float, funcs:list = [shapiro, normaltest, jarque_bera,
 
 
     return iplot(andar_table)
+
+
+def hist(x,title:str):
+    """
+    Docstring
+    Function that plots the time series Histogram.
+    
+    Parameters
+    --------------------
+    x: time series.
+    title: the title of the plot.
+    
+    Returns
+    --------------------
+    boxplot of the time series. 
+    """
+    fig = go.Figure(data=[go.Histogram(x=x,)])
+
+    fig.update_layout(
+        title_text=title)
+
+    return fig.show()
+
 
 
 
@@ -528,7 +547,7 @@ def boxplot(x,title:str):
 
 
 
-def seasonality(x,alfa,m):
+def seasonality(x,alfa:float,m:int):
         """
         Docstring
         
@@ -629,7 +648,7 @@ def iqr(x):
     upper_limit = q3+1.5*iqr
 
     outliers = x[x['Actual ']<lw_limit].append(x[x['Actual ']>upper_limit])
-    return outliers
+    return outliers['Actual ']
 
 
 def qq(x,qqplot_data):
@@ -692,4 +711,60 @@ def qq(x,qqplot_data):
     })
     
     return fig.show()
+
+def stationarity(x,alfa:float):
+    """
+    Docstring
+    
+    The porpouse of this function is to test if the the time series is stationary usign the Augmented Dickey Fuller test.
+    
+    Parameters
+    -----------------
+    x: time series
+    alfa: 1-significance level
+    
+    Returns
+    ----------------
+    A chart with the results of the test.
+    """
+    stat = adfuller(x)
+    c=0
+    if stat[1] <= alfa:
+        c='Is Stationary'
+    else:
+        c='Not Stationary'
+
+
+ 
+    results = np.array(['ADF',stat[0],1-alfa,'Not Stationary',stat[1],c])
+    #table plotly
+    trace = go.Table(
+        header=dict(values=['<b>Statistical test</b>', 
+                            '<b>Statistic</b>','<b>Significance level</b>','<b>Null Hypothesis</b>','<b>P-value</b>','<b>Comment</b>'],
+                    line = dict(width=0),
+                    fill = dict(color='rgba(42,63,95,0.8)'),
+                    align = 'center',
+                    font = dict(
+                        color = '#ffffff',
+                        size = 12
+                    )),
+        cells=dict(values=np.array(results).T,
+                   line = dict(width=0),
+                   fill = dict(color=[['#EBF0F8', '#ffffff', '#EBF0F8','#ffffff','#EBF0F8','#ffffff']]),
+                   align = 'center', 
+                   height = 40),
+        columnwidth=[0.3, 0.25, 0.3])
+    layout = dict(
+        height=300,
+        margin=dict(
+            l=5,
+            r=5,
+            t=30,
+            b=0
+        )
+    )
+    data = [trace]
+    andar_table = dict(data=data, layout=layout)
+    
+    return iplot(andar_table)
 
