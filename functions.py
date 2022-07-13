@@ -768,3 +768,91 @@ def stationarity(x,alfa:float):
     
     return iplot(andar_table)
 
+def validation(data,n_val):
+    """
+    This function returns a dataframe for a visual and empirical validation.
+    
+    Parameters
+    ----------
+    data : Dataframe
+        Dataframe to validate
+        
+    n_val: numeric
+        Defines the number of validation
+        
+    Return
+    ----------
+    Trial : Dataframe 
+
+    """
+        
+    Trial = data.copy()
+        
+    if n_val==1:
+        return Trial[6]   
+    elif n_val==2:        
+        return Trial[15]    
+    elif n_val==3:        
+        return Trial[27]  
+    elif n_val==4:
+        return Trial[18]
+    else:        
+        return Trial[34]
+        
+def empiric_trade(val):
+    """
+    This function creates an empirical strategy defining a direction, takeprofit, stoploss and volume. It also 
+    indicates the strategy recomended after the visualization of each validation.
+    
+    Parameters
+    ----------
+    val : Dataframe
+        Dataframe to validate
+        
+    Return
+    ----------
+    summary : Dataframe
+        This dataframe contains a summary of the empirical strategy
+
+    """
+    np.random.seed(123)
+    
+    ind_date = val.iloc[0]['timestamp']+datetime.timedelta(minutes=30)
+    ind_idx  = val.index[[val['timestamp']==ind_date]]
+    ind_idx = ind_idx[0]
+    rent =  val.iloc[-1]['close']-val.loc[ind_idx]['open']
+    max_pip = np.round((-val.loc[ind_idx]['open']+val['open'].max())*10000)
+    min_pip = np.round((val.loc[ind_idx]['open']-val['open'].min())*10000)
+    
+    
+    if rent > 0: #Buy
+        direction = np.sign(rent)
+        operation = 'Buy'
+        volume = np.median(val['volume'])
+        takeprofit = + np.random.randint(0,max_pip)
+        stoploss = np.random.randint(0,min_pip)
+        price_tp = val.loc[ind_idx]['open']+(takeprofit/10000)
+        price_sl = val.loc[ind_idx]['open']+(-stoploss/10000)
+        profit = volume * (price_tp-val.loc[ind_idx]['open'])
+        loss = volume * (price_sl-val.loc[ind_idx]['open'])
+        
+    elif rent < 0: #Sell
+        direction = np.sign(rent)
+        operation = 'Sell'
+        volume = np.median(val['volume'])
+        takeprofit = np.random.randint(0,min_pip)
+        stoploss =  np.random.randint(0,max_pip)
+        price_tp = val.loc[ind_idx]['open']+(-takeprofit/10000)
+        price_sl = val.loc[ind_idx]['open']+(stoploss/10000)
+        profit = volume * (val.loc[ind_idx]['open']-price_tp)
+        loss = volume * (val.loc[ind_idx]['open']-price_sl)
+        
+    dict_metrics = {'Operation':operation,'Direction':direction, 'Takeprofit':takeprofit, 
+                    'Stoploss': stoploss,'Profit':profit, 'Loss':loss}
+        
+    summary = pd.DataFrame(dict_metrics, index=['Operation']) 
+    return summary
+    
+
+
+
