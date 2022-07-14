@@ -1,6 +1,5 @@
 ## Description
-*Insert here a brief description of the project, including, purpose, technologies used and context 
-where it was created.*
+
 **Fundamental Analysis Final project**
 *The porpouse of the proyect is to build an intraday trading system for the forex pair: USD/MXN.*
 *This system is based on the result of an economic indicator from the US Econony, the Unemployment rate, which is published during the first week of each month.*
@@ -17,7 +16,7 @@ Or you can manually install one by one using the name and version in the file.
 
 ## Funcionalities
 
-*.*
+*The purpose of this project is to analyze the release of an economic indicator as an event that can generate temporary patterns in the price reactions of a financial asset for a trading system.*
 
 ## Author
 **Team:**
