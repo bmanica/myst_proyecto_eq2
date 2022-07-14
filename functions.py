@@ -31,7 +31,7 @@ import plotly.figure_factory as ff
 import chart_studio.plotly 
 import plotly.offline as pyo
 from plotly.offline import iplot
-from pyswarm import pso
+#from pyswarm import pso
 
 
 def data_manipulation(forex_1, forex_2, forex_3, indicator):
@@ -796,6 +796,88 @@ def empiric_trade(val):
         
     summary = pd.DataFrame(dict_metrics, index=['Operation']) 
     return summary
+
+
+def decisions(df_escenarios, usdmxn):
+    """
+    Function that creates a dataframe with the desingned
+    strategy to place orders according to the scenario.
+
+    Parameters
+    ----------
+
+    df_escenarios:dataframe
+
+        'Datetime': timestamp, date of the indicator
+        'Scenario': A, B, C or D
+        'Direction': -1 if close price < open, 1 if close price > open
+        'Bullish_Pip': diference between the highest price (t_0:t_30) and the open price t_0
+        'Bear_Pip': diference between the open price t_0 and the lowest price (t_0:t_30)
+        'Volatility': diference between the highest price and the lowest
+
+     usdmxn:dataframe of the prices of the currency
+
+    Returns
+    -------
+        df_de: dataframe
+            dataframe with the following information
+            'Scenario': A, B, C or D
+            'Operation': Sell or Buy
+            'SL': stop loss
+            'TP': take profit
+            'Volume': optimal volume
+
+
+    """
+    data_des = df_escenarios.copy()
+    data_des = data_des.iloc[0:13, :]
+    scen_a = data_des[data_des['Scenario'] == 'A']
+    scen_b = data_des[data_des['Scenario'] == 'B']
+    scen_c = data_des[data_des['Scenario'] == 'C']
+    scen_d = data_des[data_des['Scenario'] == 'D']
+
+    inx_scen = scen_a.index[scen_a['Scenario'] == 'A']
+    volume_a = []
+    for i in range(len(scen_a)):
+        volume_a.append((usdmxn[usdmxn['timestamp'] == inx_scen[i]]['volume']).tolist())
+    scen_a['Volume'] = [volume_a[i][0] for i in range(len(scen_a))]
+
+    tp_a = scen_a['Bear_Pip'].mean()
+    sl_a = scen_a['Bullish_Pip'].mean()
+    vol_a = scen_a['Volume'].min()
+
+    tp_b = scen_b['Bear_Pip'].mean()
+    sl_b = scen_b['Bullish_Pip'].mean()
+    vol_b = 47170
+
+    inx_scen_c = scen_c.index[scen_c['Scenario'] == 'C']
+    volume_c = []
+    for i in range(len(scen_c)):
+        volume_c.append((usdmxn[usdmxn['timestamp'] == inx_scen_c[i]]['volume']).tolist())
+    scen_c['Volume'] = [volume_c[i][0] for i in range(len(scen_c))]
+
+    tp_c = scen_c['Bullish_Pip'].mean()
+    sl_c = scen_a['Bear_Pip'].mean()
+    vol_c = scen_c['Volume'].min()
+
+    inx_scen_d = scen_d.index[scen_d['Scenario'] == 'D']
+    volume_d = []
+    for i in range(len(scen_d)):
+        volume_d.append((usdmxn[usdmxn['timestamp'] == inx_scen_d[i]]['volume']).tolist())
+    scen_d['Volume'] = [volume_d[i][0] for i in range(len(scen_d))]
+
+    tp_d = scen_b['Bullish_Pip'].mean()
+    sl_d = scen_d['Bear_Pip'].mean()
+    vol_d = scen_d['Volume'].min()
+
+    dict_d = {'Scenario': ['A', 'B', 'C', 'D'], 'Operation': ['Sell', 'Sell', 'Buy', 'Buy'],
+              'SL':np.round([sl_a, sl_b, sl_c, sl_d], 0),
+              'TP':np.round([tp_a, tp_b, tp_c, tp_d], 0), 'Volume':[vol_a, vol_b, vol_c, vol_d]}
+
+    df_de = pd.DataFrame(dict_d)
+
+    return df_de
+
 
 # ================================== Trading System Definition ============================================ #
 
