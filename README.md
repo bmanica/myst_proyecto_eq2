@@ -25,6 +25,22 @@ Or you can manually install one by one using the name and version in the file.
 *Ana Cristina Vazquez: Credit Risk intern at Bradescard, Financial Engineering 4th year student at ITESO.*
 *Juan Pablo Ruiz: Financial Analyst intern at ITESO, Financial Engineering 4th year student at ITESO.*
 
+## Working Profiles
+Financial Profile: In charge of the financial section of the project
+-Espinosa Garcia Lyha
+-Vazquez Vargas Cristina
+
+Statistical Profile: In charge of the statistical section of the projet
+-Manica Pineda Bryan
+-Ruiz Magaña Juan Pablo
+
+Computacional Profile: In charge of the optimization section of the project
+-Manica Pineda Bryan
+-Espinosa Garcia Lyha
+-Ruiz Magaña Juan Pablo
+-Vazquez Vargas Cristina
+
+
 ## License
 **GNU General Public License v3.0** 
 
