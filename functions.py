@@ -1424,4 +1424,81 @@ def get_pso(obj_fun,
     # Define the optimal process
     xopt, fopt = pso(obj_fun, upper_limit, down_limit, args=args, maxiter=iterations, minstep=minstep)
 
-    return xopt, fopt
+    return xopt, -fopt
+
+    def limits(df_escenarios):
+        """
+        Function that creates a list with the limits of each scenario.
+
+        Parameters
+        ----------
+
+        df_escenarios:dataframe
+
+            'Datetime': timestamp, date of the indicator
+            'Scenario': A, B, C or D
+            'Direction': -1 if close price < open, 1 if close price > open
+            'Bullish_Pip': diference between the highest price (t_0:t_30) and the open price t_0
+            'Bear_Pip': diference between the open price t_0 and the lowest price (t_0:t_30)
+            'Volatility': diference between the highest price and the lowest
+
+
+        Returns
+        -------
+            limists_list:
+                list with the following information
+                'a_lim': list with the scenario A limits
+                'b_lim': list with the scenario B limits
+                'c_lim': list with the scenario C limits
+                'd_lim': list with the scenario D limits
+
+
+        """
+
+        # A
+        limit_low_bull_a = np.abs(np.mean(df_escenarios[df_escenarios['Scenario'] == 'A']['Bullish_Pip']) - np.min(
+            df_escenarios[df_escenarios['Scenario'] == 'A']['Volatility']))
+        limit_high_bull_a = np.max(df_escenarios[df_escenarios['Scenario'] == 'A']['Bullish_Pip'])
+
+        limit_low_bear_a = np.abs(np.mean(df_escenarios[df_escenarios['Scenario'] == 'A']['Bear_Pip']) - np.min(
+            df_escenarios[df_escenarios['Scenario'] == 'A']['Volatility']))
+        limit_high_bear_a = np.max(df_escenarios[df_escenarios['Scenario'] == 'A']['Bear_Pip'])
+
+        a_lim = [limit_low_bull_a, limit_high_bull_a, limit_low_bear_a, limit_high_bear_a]
+
+        # B
+        limit_low_bull_b = np.abs(np.mean(df_escenarios[df_escenarios['Scenario'] == 'B']['Bullish_Pip']) - np.min(
+            df_escenarios[df_escenarios['Scenario'] == 'B']['Volatility']))
+        limit_high_bull_b = np.max(df_escenarios[df_escenarios['Scenario'] == 'B']['Bullish_Pip'])
+
+        limit_low_bear_b = np.abs(np.mean(df_escenarios[df_escenarios['Scenario'] == 'B']['Bear_Pip']) - np.min(
+            df_escenarios[df_escenarios['Scenario'] == 'B']['Volatility']))
+        limit_high_bear_b = np.max(df_escenarios[df_escenarios['Scenario'] == 'B']['Bear_Pip'])
+
+        b_lim = [limit_low_bull_b, limit_high_bull_b, limit_low_bear_b, limit_high_bear_b]
+
+        # C
+        limit_low_bull_c = np.abs(np.mean(df_escenarios[df_escenarios['Scenario'] == 'C']['Bullish_Pip']) - np.min(
+            df_escenarios[df_escenarios['Scenario'] == 'C']['Volatility']))
+        limit_high_bull_c = np.max(df_escenarios[df_escenarios['Scenario'] == 'C']['Bullish_Pip'])
+
+        limit_low_bear_c = np.abs(np.mean(df_escenarios[df_escenarios['Scenario'] == 'C']['Bear_Pip']) - np.min(
+            df_escenarios[df_escenarios['Scenario'] == 'C']['Volatility']))
+        limit_high_bear_c = np.max(df_escenarios[df_escenarios['Scenario'] == 'C']['Bear_Pip'])
+
+        c_lim = [limit_low_bull_c, limit_high_bull_c, limit_low_bear_c, limit_high_bear_c]
+
+        # D
+        limit_low_bull_d = np.abs(np.mean(df_escenarios[df_escenarios['Scenario'] == 'D']['Bullish_Pip']) - np.min(
+            df_escenarios[df_escenarios['Scenario'] == 'D']['Volatility']))
+        limit_high_bull_d = np.max(df_escenarios[df_escenarios['Scenario'] == 'D']['Bullish_Pip'])
+
+        limit_low_bear_d = np.abs(np.mean(df_escenarios[df_escenarios['Scenario'] == 'D']['Bear_Pip']) - np.min(
+            df_escenarios[df_escenarios['Scenario'] == 'D']['Volatility']))
+        limit_high_bear_d = np.max(df_escenarios[df_escenarios['Scenario'] == 'D']['Bear_Pip'])
+
+        d_lim = [limit_low_bull_d, limit_high_bull_d, limit_low_bear_d, limit_high_bear_d]
+
+        limists_list = [a_lim, b_lim, c_lim, d_lim]
+
+        return limits_list
