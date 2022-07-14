@@ -31,7 +31,7 @@ import plotly.figure_factory as ff
 import chart_studio.plotly 
 import plotly.offline as pyo
 from plotly.offline import iplot
-#from pyswarm import pso
+from pyswarm import pso
 
 
 def data_manipulation(forex_1, forex_2, forex_3, indicator):
@@ -230,6 +230,10 @@ def dw(x, funcs=[acf,pacf]):
     Returns
     -------------
     returns three figures, which contain the result of the durbin watson test and the PACF and ACF plot.
+    
+    References
+    -------------
+    https://www.statology.org/durbin-watson-test-python/
     """
 
     X =np.arange(len(x))
@@ -372,7 +376,7 @@ def var_test(x,alfa:float):
     
      #table plotly
     trace = go.Table(
-        header=dict(values=['<b>Statistical test</b>', '<b>Significance Level</b>', '<b>P-Value</b>',
+        header=dict(values=['<b>Statistical test</b>', '<b>Confidence Level</b>', '<b>P-Value</b>',
                             '<b>Null Hypothesis</b>', '<b>Comment</b>'],
                     line = dict(width=0),
                     fill = dict(color='rgba(42,63,95,0.8)'),
@@ -423,6 +427,10 @@ def normality_test(x,alfa:float, funcs:list = [shapiro, normaltest, jarque_bera,
     ------------
     
     A chart with the normalility test results.
+    
+    References
+    --------------
+    https://plotly.com/python/v3/normality-test/
     """
     
     # save results in a dataframe
@@ -460,7 +468,7 @@ def normality_test(x,alfa:float, funcs:list = [shapiro, normaltest, jarque_bera,
             
     #table plotly
     trace = go.Table(
-        header=dict(values=['<b>Statistical test</b>', '<b>Significance Level</b>', '<b>P-Value</b>',
+        header=dict(values=['<b>Statistical test</b>', '<b>Confidence Level</b>', '<b>P-Value</b>',
                             '<b>Null Hypothesis</b>', '<b>Comment</b>'],
                     line = dict(width=0),
                     fill = dict(color='rgba(42,63,95,0.8)'),
@@ -508,6 +516,10 @@ def seasonality(x,alfa:float,m:int):
         Returns
         ----------------
         A chart with the results.
+        
+         Reference
+        ----------------
+        https://knk00.medium.com/how-to-determine-seasonality-without-plots-f18cee913b95
     
         """
         
@@ -538,7 +550,7 @@ def seasonality(x,alfa:float,m:int):
 
         #table plotly
         trace = go.Table(
-            header=dict(values=['<b>Statistical test</b>', '<b>Significance Level</b>', '<b>P-Value</b>',
+            header=dict(values=['<b>Statistical test</b>', '<b>Confidence Level</b>', '<b>P-Value</b>',
                                 '<b>Null Hypothesis</b>', '<b>Comment</b>'],
                         line = dict(width=0),
                         fill = dict(color='rgba(42,63,95,0.8)'),
@@ -582,6 +594,10 @@ def iqr(x):
     Returns
     ------------------
     a dataframe with the values that are consider outliers.
+    
+     References
+    ------------------
+    https://www.statology.org/interquartile-range-python/
     """
 
 
@@ -609,6 +625,10 @@ def qq(x,qqplot_data):
     Returns
     --------------
     A qqplot figure.
+    
+    References
+    --------------
+    https://plotly.com/python/v3/normality-test/
     """
     
 
@@ -670,6 +690,10 @@ def stationarity(x,alfa:float):
     Returns
     ----------------
     A chart with the results of the test.
+    
+    References
+    ----------------
+    https://machinelearningmastery.com/time-series-data-stationary-python/
     """
     stat = adfuller(x)
     c=0
@@ -684,7 +708,7 @@ def stationarity(x,alfa:float):
     #table plotly
     trace = go.Table(
         header=dict(values=['<b>Statistical test</b>', 
-                            '<b>Statistic</b>','<b>Significance level</b>','<b>Null Hypothesis</b>','<b>P-value</b>','<b>Comment</b>'],
+                            '<b>Statistic</b>','<b>Confidence level</b>','<b>Null Hypothesis</b>','<b>P-value</b>','<b>Comment</b>'],
                     line = dict(width=0),
                     fill = dict(color='rgba(42,63,95,0.8)'),
                     align = 'center',

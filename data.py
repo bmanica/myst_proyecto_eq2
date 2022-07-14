@@ -15,6 +15,7 @@
 import pandas as pd
 import datetime
 
+
 # ================================= Data object definition ================================================ #
 
 ### Data reading from local carpet
@@ -73,3 +74,7 @@ training_usdmxn = usdmxn_opt[(pd.to_datetime(usdmxn_opt['date'])>=pd.to_datetime
 
 test_usdmxn = usdmxn_opt[(pd.to_datetime(usdmxn_opt['date'])>=pd.to_datetime('2019-01-02')) &
                          (pd.to_datetime(usdmxn_opt['date'])<=pd.to_datetime('2020-01-02'))]
+
+
+
+

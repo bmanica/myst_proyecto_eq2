@@ -39,7 +39,7 @@ def val_graph(df):
     return fig.show()
 
 
-def hist(x,title:str):
+def hist(x,title:str,yaxes:str,xaxes:str):
     """
     Docstring
     Function that plots the time series Histogram.
@@ -56,7 +56,7 @@ def hist(x,title:str):
     fig = go.Figure(data=[go.Histogram(x=x,)])
 
     fig.update_layout(
-        title_text=title)
+        title_text=title,xaxis_title=xaxes,yaxis_title=yaxes)
 
     return fig.show()
 
@@ -64,7 +64,7 @@ def hist(x,title:str):
 
 
 
-def boxplot(x,title:str):
+def boxplot(x,title:str,yaxes:str,xaxes:str):
     """
     Docstring
     Function that plots the time series boxplot.
@@ -81,6 +81,29 @@ def boxplot(x,title:str):
     fig = go.Figure(data=[go.Box(x=x,)])
 
     fig.update_layout(
-        title_text=title)
+        title_text=title,xaxis_title=xaxes,yaxis_title=yaxes)
 
     return fig.show()
+
+def plot_ts(ts:dict, title:str,yaxes:str,xaxes:str):
+    """
+    This function plots the indicator time series. 
+    
+    Parameters
+    ----------
+    ts : Dataframe
+    title: chart title   
+        
+    Return
+    ----------
+    fig : Plot 
+
+    """
+    
+    fig = go.Figure([go.Scatter(x=ts.iloc[:,0], y=ts['Actual '])])
+    fig.update_layout(title_text=title,
+                     xaxis_title=xaxes,yaxis_title=yaxes)
+    
+    return fig.show()
+
+
